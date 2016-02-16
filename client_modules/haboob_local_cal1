@@ -1,0 +1,14 @@
+#!/bin/bash
+
+
+echo testing  server...
+
+./start_test.sh local . 500000 --name=haboob_cal1 --url=http://127.0.0.1:3001/  --con=50
+./start_test.sh local . 500000 --name=haboob_cal1 --url=http://127.0.0.1:3001/  --con=100
+./start_test.sh local . 500000 --name=haboob_cal1 --url=http://127.0.0.1:3001/  --con=200
+./start_test.sh local . 500000 --name=haboob_cal1 --url=http://127.0.0.1:3001/  --con=400
+./start_test.sh local . 500000 --name=haboob_cal1 --url=http://127.0.0.1:3001/  --con=800
+./start_test.sh local . 500000 --name=haboob_cal1 --url=http://127.0.0.1:3001/  --con=1600
+./start_test.sh local . 500000 --name=haboob_cal1 --url=http://127.0.0.1:3001/  --con=3200
+
+

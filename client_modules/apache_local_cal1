@@ -1,0 +1,7 @@
+#!/bin/bash
+
+
+
+./start_test.sh local . 400000 --name=apache_cal1 --url=http://127.0.0.1:3004/  --con=50
+
+

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html ng-app="todoApp">
+<head>
+  <meta http-equiv="Expires" content="-1">
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular.min.js"></script>
+  <script>
+    var todoApp = angular.module("todoApp", []);
+
+	todoApp.controller("ToDoCtrl", function($scope, $http) {
+		$scope.todo = "in angular";
+
+		$scope.exp = {
+		/*
+			server: 'java',
+			conc: 1000,
+			ecase: 'cal10',
+			imgHi: 2000,
+			imgWi: 800,
+			xRangeL: 'OFF',
+			xRangeR: 'OFF',
+			inout: 'ON',
+			multi: 'ON',
+			resTime: 'ON',
+			collectl0: 'OFF',
+			collectl1: 'OFF',
+			collectl2: 'OFF',
+			*/
+
+		};
+
+		var init = function() {
+			$http.get('./initial') 
+			.success(function(data) {
+
+				$scope.exp.tester = data.tester;
+				$scope.exp.testName = data.testName;
+				$scope.exp.testTime = data.testTime;
+				$scope.exp.server = data.server;
+				$scope.exp.conc = data.conc;
+				$scope.exp.ecase = data.ecase;
+				$scope.exp.imgHi = data.imgHi;
+				$scope.exp.imgWi = data.imgWi;
+				$scope.exp.xRangeL = data.xRangeL;
+				$scope.exp.xRangeR = data.xRangeR;
+				$scope.exp.inout = data.inout;
+				$scope.exp.multi = data.multi;
+				$scope.exp.resTime = data.resTime;
+				$scope.exp.collectl0 = data.collectl0;
+				$scope.exp.collectl1 = data.collectl1;
+				$scope.exp.collectl2 = data.collectl2;
+				$scope.exp.longreq = data.longreq;
+				$scope.exp.inoutRange = data.inoutRange;
+				$scope.exp.multiRange = data.multiRange;
+				$scope.exp.responseRange = data.responseRange;
+				$scope.exp.png_file = data.png_file;
+			}).error(function(err) {
+				if(err) alert(err);
+			});
+		}
+		init();
+
+		$scope.startTest = function() {
+			$http.post('./starttest', $scope.exp)
+				.success(function(data) {
+					window.location.reload(true);
+				}).error(function(err) {
+					if(err) alert(err);
+				});
+		};
+		$scope.submitExp = function() {
+			$http.post('./showdata', $scope.exp)
+				.success(function(data) {
+					window.location.reload(true);
+				}).error(function(err) {
+					if(err) alert(err);
+				});
+		};
+		$scope.tunePlot = function() {
+			$http.post('./tuneplot', $scope.exp)
+				.success(function(data) {
+					window.location.reload(true);
+				}).error(function(err) {
+					if(err) alert(err);
+				});
+		}
+		$scope.plotMaxTP = function() {
+			$http.post('./plotmaxtp', $scope.exp)
+				.success(function(data) {
+					window.location.reload(true);
+				}).error(function(err) {
+					if(err) alert(err);
+				});
+		}
+		$scope.loadPlot = function() {
+			$http.post('./loadplot', $scope.exp)
+				.success(function(data) {
+					window.location.reload(true);
+				}).error(function(err) {
+					if(err) alert(err);
+				});
+		}
+		$scope.statRT = function() {
+			$http.post('./statRT', $scope.exp)
+				.success(function(data) {
+					window.location.reload(true);
+				}).error(function(err) {
+					if(err) alert(err);
+				});
+		}
+		$scope.statTP = function() {
+			$http.post('./statTP', $scope.exp)
+				.success(function(data) {
+					window.location.reload(true);
+				}).error(function(err) {
+					if(err) alert(err);
+				});
+		}
+	});
+  </script>
+</head>
+<body ng-controller="ToDoCtrl">
+  <form>
+	<!--
+	TestName:<input type="text" ng-model="exp.testName">
+	TestTime:<input type="text" ng-model="exp.testTime">
+	Tester:<input type="text" ng-model="exp.tester">-->
+	<br/>
+    Server:<select ng-model="exp.server"><option value="haboob">haboob<option value="java">java</option><option value="node">node</option><option value="nginx">nginx</option><option value="apachesf">apachesf</option><option value="javan">javan</option><option value="javan5">javan5</option><option value="apache">apache</option><option value="java3500">java3500</option><option value="nginx">nginx</option><option value="node">node</option><option value="nginxsf">nginxsf</option></select>Conc:<select ng-model="exp.conc"><option value="50">50</option><option value="100">100</option><option value="200">200</option><option value="400">400</option><option value="800">800</option><option value="1600">1600</option><option value="3200">3200</option><option value="4800">4800</option><option value="6400">6400</option><option value="1800">1800</option><option value="2000">2000</option></select>Experiment:<select ng-model="exp.ecase"><option value="cal1">cal1</option><option value="cal10">cal10</option><option value="cal100">cal100</option></select>
+	<br/>
+<!--	<input type="button" ng-click="startTest()" value="Test">-->
+	<br/>
+
+ImageWidth:<input type="text" ng-model="exp.imgHi">ImageHeight:<input type="text" ng-model="exp.imgWi">
+	<br/>
+xRangeL:<input type="text" ng-model="exp.xRangeL">xRangeR:<input type="text" ng-model="exp.xRangeR">
+	<br/>
+Inout:<select ng-model="exp.inout"><option value="ON">ON</option><option value="OFF">OFF</option></select>YRange:<input type="text" ng-model="exp.inoutRange">Multiplicity:<select ng-model="exp.multi"><option value="ON">ON</option><option value="OFF">OFF</option></select>YRange:<input type="text" ng-model="exp.multiRange">ResponseTime:<select ng-model="exp.resTime"><option value="ON">ON</option><option value="OFF">OFF</option></select>YRange:<input type="text" ng-model="exp.responseRange">
+	<br/>
+CollectlParam:<select ng-model="exp.collectl0"><option value="OFF">OFF</option><option value="CPU_User">CPU_User</option><option value="CPU_Sys">CPU_Sys</option><option value="CPU_Totl">CPU_Totl</option><option value="CPU_Nice">CPU_Nice</option><option value="CPU_Wait">CPU_Wait</option><option value="CPU_Irq">CPU_Irq</option><option value="CPU_Soft">CPU_Soft</option><option value="CPU_Steal">CPU_Steal</option><option value="CPU_Ctx_sec">CPU_Ctx_sec</option><option value="MEM_Tot">MEM_Tot</option><option value="MEM_Used">MEM_Used</option><option value="MEM_Buf">MEM_Buf</option><option value="MEM_Cached">MEM_Cached</option><option value="MEM_Free">MEM_Free</option><option value="DSK_ReadTot">DSK_ReadTot</option><option value="DSK_WriteTot">DSK_WriteTot</option></select>CollectlParam:<select ng-model="exp.collectl1"><option value="OFF">OFF</option><option value="CPU_User">CPU_User</option><option value="CPU_Sys">CPU_Sys</option><option value="CPU_Totl">CPU_Totl</option><option value="CPU_Nice">CPU_Nice</option><option value="CPU_Wait">CPU_Wait</option><option value="CPU_Irq">CPU_Irq</option><option value="CPU_Soft">CPU_Soft</option><option value="CPU_Steal">CPU_Steal</option><option value="CPU_Idle">CPU_Idle</option><option value="MEM_Tot">MEM_Tot</option><option value="MEM_Used">MEM_Used</option><option value="MEM_Buf">MEM_Buf</option><option value="MEM_Cached">MEM_Cached</option><option value="MEM_Free">MEM_Free</option><option value="DSK_ReadTot">DSK_ReadTot</option><option value="DSK_WriteTot">DSK_WriteTot</option></select>CollectlParam:<select ng-model="exp.collectl2"><option value="OFF">OFF</option><option value="CPU_User">CPU_User</option><option value="CPU_Sys">CPU_Sys</option><option value="CPU_Totl">CPU_Totl</option><option value="CPU_Nice">CPU_Nice</option><option value="CPU_Wait">CPU_Wait</option><option value="CPU_Irq">CPU_Irq</option><option value="CPU_Soft">CPU_Soft</option><option value="CPU_Steal">CPU_Steal</option><option value="CPU_Idle">CPU_Idle</option><option value="MEM_Tot">MEM_Tot</option><option value="MEM_Used">MEM_Used</option><option value="MEM_Buf">MEM_Buf</option><option value="MEM_Cached">MEM_Cached</option><option value="MEM_Free">MEM_Free</option><option value="DSK_ReadTot">DSK_ReadTot</option><option value="DSK_WriteTot">DSK_WriteTot</option></select>
+	<br/>
+LongReq:<select ng-model="exp.longreq"><option value="AllReq">AllReq</option><option value="LongReq">LongReq</option></select>
+
+	<br/>
+	<input type="button" ng-click="submitExp()" value="Stat&Plot">
+	<input type="button" ng-click="tunePlot()" value="TunePlot">
+	<input type="button" ng-click="loadPlot()" value="LoadPlot">
+	<input type="button" ng-click="statRT()" value="StatRT">
+	<input type="button" ng-click="statTP()" value="StatTP">
+
+	<input type="button" ng-click="plotMaxTP()" value="PlotMaxTP">
+
+	<br/>
+<!--	<img src="./show.png" ng-model="exp.png_file"> -->
+	<img src="./show.png" > 
+  </form>
+</body>
+
+</html>

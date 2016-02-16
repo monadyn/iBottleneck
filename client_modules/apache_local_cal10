@@ -1,0 +1,8 @@
+#!/bin/bash
+
+
+echo testing apache server...
+
+./start_test.sh local . 5000 --name=apache_cal10 --url=http://127.0.0.1:80/ --con=800
+
+

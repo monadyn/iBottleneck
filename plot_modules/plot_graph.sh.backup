@@ -1,0 +1,226 @@
+#!/bin/bash
+
+
+##### Constants
+reposity_web_root=~/node
+test_data_root=~/test_data
+one_conc_test_root=$test_data_root/$1_$3/t1
+
+iBottleneck_root=~/iBottleneck
+
+echo "pwd: `pwd`"
+echo "\$0: $0"
+echo "basename: `basename $0`"
+echo "dirname: `dirname $0`"
+echo "dirname/readlink: $(dirname $(readlink -f $0))"
+pushd $(dirname $(readlink -f $0))
+echo "pwd: `pwd`"
+
+##### Functions
+usage(){
+	    echo "Usage: $0 filename"
+			    exit 1
+}
+
+# define is_file_exists function
+# $f -> store argument passed to the script
+is_file_exists(){
+
+	local f="$1"
+	echo check file "$1"
+    [[ -f "$f" ]] && return 0 || return 1
+}
+# invoke  usage
+# call usage() function if filename not supplied
+#[[ $# -eq 0 ]] && usag
+
+init(){
+	echo 'init--->'
+	rm -rf $iBottleneck_root/public/*.png
+	rm -rf *.png
+	rm -rf *.txt
+	rm -rf *.stats
+	rm -rf *.tab
+	rm -rf *.gz
+	echo ''
+}
+
+#########################################
+#Main
+srv_original_file=$test_data_root/$1_$3/t1/$1_$3_$2.tab.gz 
+client_original_file=$test_data_root/$1_$3/t1/$1_$3_$2.stats
+
+init
+
+#extract collectl data 
+if ( is_file_exists "$srv_original_file" )
+then	
+	cp $srv_original_file cdata.tab.gz
+	gzip -d cdata.tab.gz
+	sed -i '1,16d' cdata.tab
+	node collectl2Epoch.js > cdata.tmp
+	head -n -1 cdata.tmp > cdata.txt
+	#rm cdata.tab
+else
+	echo "exit "
+	exit 1
+fi
+
+#extract ab data
+if ( is_file_exists "$client_original_file" )
+then
+	cp $client_original_file sdata.stats
+	sed -i '/This is ApacheBench/, /longest request/d' sdata.stats
+#cut first 20 s
+#node cut20s.js > sdata.temp
+#mv sdata.temp sdata.stats
+	node requestAnalysis.js > presdata.txt
+	head -n -2 presdata.txt > sdata.txt
+	tail -n 2 presdata.txt > timerange.txt
+else
+	 echo "exit"
+	 exit 1
+fi
+
+
+
+#node genInputForPython.js $2
+if [ ${12} = "LongReq" ]; then
+	node genInputForPythonLongReq.js $2
+	rm *QueueLength*csv
+	echo "to do LongReq"
+else
+	node genInputForPython.js $2
+	echo "all req"
+fi
+
+########################
+#get txt file for plot
+mv *inout*csv inout.txt
+#cp inout.txt inout.csv
+mv *multiplicity*csv multiplicity.txt
+#cp multiplicity.txt multiplicity.csv  #for debug
+mv *responsetime*csv responsetime.txt
+#cp responsetime.txt reponsetime.csv
+
+sed -i "s/,/ /g" inout.txt
+sed -i "s/,/ /g" multiplicity.txt
+sed -i "s/,/ /g" responsetime.txt
+
+sed -i "1,1d" inout.txt
+sed -i "1,1d" multiplicity.txt
+sed -i "1,1d" responsetime.txt
+
+cp inout.txt inout.backup
+cp cdata.txt cdata.backup
+node shortTime.js inout.txt > inout_tmp.txt
+node shortTime.js multiplicity.txt > multiplicity_tmp.txt
+node shortTime.js responsetime.txt > responsetime_tmp.txt
+node shortTime.js cdata.txt >cdata_tmp.txt
+mv inout_tmp.txt inout.txt
+mv multiplicity_tmp.txt multiplicity.txt
+mv responsetime_tmp.txt responsetime.txt
+mv cdata_tmp.txt cdata.txt
+#########################################3
+echo 'gnuplot-->'
+echo > gplot.txt
+echo "set term png size "$4  >> gplot.txt
+nfile=$1"_"$3"_"$2".png"
+filename="set output '"$1"_"$3"_"$2".png" >> gplot.txt
+echo $filename >> gplot.txt
+#plotname="set multiplot layout 8, 1 title 'abcde'"
+plotname="set multiplot layout 8, 1 title '"$1" "$3" "$2"'"
+echo $plotname >> gplot.txt
+
+if [ $5 = "OFF" ]; then
+	./getXrange.sh $1 $2 $3 >> gplot.txt
+else 
+	echo "set xrange "$5 >> gplot.txt	
+fi
+
+echo "set xlabel 'Timeline [s]'" >> gplot.txt
+
+if [ $6 = "ON" ]; then
+	echo "set ylabel 'Throughput [Reqs/s]'" >> gplot.txt
+	if [ ${13} != "OFF" ]; then
+		echo "set yrange "${13} >> gplot.txt
+	fi
+	echo "set style data linespoints" >> gplot.txt
+	#echo "plot 'inout.txt' using 1:2  with linespoints title 'Send', 'inout.txt' using 1:3 with linespoints title 'Receive'" >> gplot.txt
+	echo "plot 'inout.txt' u (\$1):(\$3*20)  with linespoints title ''" >> gplot.txt
+	echo "set autoscale y" >> gplot.txt
+fi
+
+if [ $7 = "ON" ]; then
+	echo "set ylabel 'Load [#]'" >> gplot.txt
+	if [ ${14} != "OFF" ]; then
+		echo "set yrange "${14} >> gplot.txt
+	fi
+	echo "set style data linespoints" >> gplot.txt
+#	echo "plot 'multiplicity.txt' using 1:2 w l" >> gplot.txt
+	echo "plot 'multiplicity.txt' using 1:2 with linespoints title 'concurrent active request'" >> gplot.txt
+	
+#	echo "set ylabel 'dropped multiplicity'" >> gplot.txt
+#	echo "set style data linespoints" >> gplot.txt
+#	echo "plot 'multiplicity.txt' using 1:14 with linespoints" >> gplot.txt
+#	echo "set ylabel 'actual multiplicity'" >> gplot.txt
+#	echo "set style data linespoints" >> gplot.txt
+#	echo "plot 'multiplicity.txt' using 1:15 with linespoints" >> gplot.txt
+	
+	#echo "set ylabel 'long_request/short_request Load [#]'" >> gplot.txt
+	echo "set ylabel 'Load [#]'" >> gplot.txt
+	echo "set style data linespoints" >> gplot.txt
+	echo "plot 'multiplicity.txt' using 1:14 with linespoints title 'response time > 1.2s',  'multiplicity.txt' using 1:15 with linespoints title 'response time <= 1.2s'"  >> gplot.txt
+	echo "set autoscale y" >> gplot.txt
+fi
+
+if [ $8 = "ON" ]; then
+	echo "set ylabel 'Response time [s]'" >> gplot.txt
+	if [ ${15} != "OFF" ]; then
+		echo "set yrange "${15} >> gplot.txt
+	fi
+	echo "plot 'responsetime.txt' using 1:2 with linespoints title 'response time < 1.2s'" >> gplot.txt
+	echo "set autoscale y" >> gplot.txt
+fi
+
+if [ $9 = "OFF" ]; then
+	echo "# noting here" >> gplot.txt
+else
+	echo "set ylabel '"$9"'" >> gplot.txt
+	node processplot.js $9 >> gplot.txt
+fi
+
+if [ ${10} = "OFF" ]; then
+	echo "# noting here" >> gplot.txt
+else
+	echo "set ylabel '"${10}"'" >> gplot.txt
+	node processplot.js ${10} >> gplot.txt
+fi
+
+if [ ${11} = "OFF" ]; then
+	echo "# noting here" >> gplot.txt
+else
+	echo "set ylabel '"${11}"'" >> gplot.txt
+	node processplot.js ${11} >> gplot.txt
+fi
+
+cp presdata.txt presdata.csv
+gnuplot -e "datasource='presdata'" histgramPlot.gnuplot
+ps2pdf presdata.ps
+mv presdata.pdf $1"_"$3"_"$2".pdf"
+
+
+gnuplot gplot.txt
+cp *png img_results/
+cp *pdf img_results/
+cp *png $reposity_web_root
+#cp *pdf $reposity_web_root
+
+rm *pdf
+
+
+#cp to public 
+cp *.png $iBottleneck_root/public/show.png
+
+#one_conc_test_root
+#cp cdata.txt /tes

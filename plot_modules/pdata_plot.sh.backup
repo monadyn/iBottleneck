@@ -1,0 +1,90 @@
+#!/bin/bash
+echo $@
+
+rm *.png
+echo > gplot.txt
+echo "set term png size "$4  >> gplot.txt
+nfile=$1"_"$3"_"$2".png"
+filename="set output '"$1"_"$3"_"$2".png" >> gplot.txt
+echo $filename >> gplot.txt
+#plotname="set multiplot layout 8, 1 title 'abcde'"
+plotname="set multiplot layout 10, 1 title '"$1" "$3" "$2"'"
+echo $plotname >> gplot.txt
+
+if [ $5 = "OFF" ]; then
+	./getXrange.sh >> gplot.txt
+else 
+	echo "set xrange "$5 >> gplot.txt	
+fi
+
+echo "set xlabel 'time'" >> gplot.txt
+
+if [ $6 = "ON" ]; then
+	echo "set ylabel 'inout'" >> gplot.txt
+	if [ ${13} != "OFF" ]; then
+		echo "set yrange "${13} >> gplot.txt
+	fi
+	echo "plot '../"$1"_"$3"/t1/"$1"_file_"$2"/inout.txt' using 1:2 w l, '../"$1"_"$3"/t1/"$1"_file_"$2"/inout.txt' using 1:3 w l" >> gplot.txt
+	echo "plot '../"$1"_"$3"/t1/"$1"_file_"$2"/inout_longReq.txt' using 1:2 w l, '../"$1"_"$3"/t1/"$1"_file_"$2"/inout_longReq.txt' using 1:3 w l" >> gplot.txt
+	echo "set autoscale y" >> gplot.txt
+fi
+
+if [ $7 = "ON" ]; then
+	echo "set ylabel 'multiplicity'" >> gplot.txt
+	if [ ${14} != "OFF" ]; then
+		echo "set yrange "${14} >> gplot.txt
+	fi
+	echo "plot '../"$1"_"$3"/t1/"$1"_file_"$2"/multiplicity.txt' using 1:2 w l" >> gplot.txt
+	echo "set ylabel 'dropped multiplicity'" >> gplot.txt
+	echo "plot '../"$1"_"$3"/t1/"$1"_file_"$2"/multiplicity.txt' using 1:14 w l" >> gplot.txt
+	echo "set ylabel 'actual multiplicity'" >> gplot.txt
+	echo "plot '../"$1"_"$3"/t1/"$1"_file_"$2"/multiplicity.txt' using 1:15 w l" >> gplot.txt
+	echo "set autoscale y" >> gplot.txt
+fi
+
+if [ $8 = "ON" ]; then
+	echo "set ylabel 'responsetime'" >> gplot.txt
+	if [ ${15} != "OFF" ]; then
+		echo "set yrange "${15} >> gplot.txt
+	fi
+	echo "plot '../"$1"_"$3"/t1/"$1"_file_"$2"/responsetime.txt' using 1:2 w l" >> gplot.txt
+	echo "plot '../"$1"_"$3"/t1/"$1"_file_"$2"/responsetime_longReq.txt' using 1:2 w l" >> gplot.txt
+	echo "set autoscale y" >> gplot.txt
+fi
+
+if [ $9 = "OFF" ]; then
+	echo "# noting here" >> gplot.txt
+else
+	echo "set ylabel '"$9"'" >> gplot.txt
+	node processplot.js $9 >> gplot.txt
+fi
+
+if [ ${10} = "OFF" ]; then
+	echo "# noting here" >> gplot.txt
+else
+	echo "set ylabel '"${10}"'" >> gplot.txt
+	node processplot.js ${10} >> gplot.txt
+fi
+
+if [ ${11} = "OFF" ]; then
+	echo "# noting here" >> gplot.txt
+else
+	echo "set ylabel '"${11}"'" >> gplot.txt
+	node processplot.js ${11} >> gplot.txt
+fi
+
+cp presdata.txt presdata.csv
+gnuplot -e "datasource='presdata'" histgramPlot.gnuplot
+ps2pdf presdata.ps
+mv presdata.pdf $1"_"$3"_"$2".pdf"
+
+
+gnuplot gplot.txt
+cp *png img_results
+cp *pdf img_results
+
+
+gnuplot gplot.txt
+#gnome-open $nfile
+
+
